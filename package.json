@@ -15,5 +15,13 @@
   "bugs": {
     "url": "https://github.com/paulroth3d/nodejsSfdcCmdTemplate/issues"
   },
-  "homepage": "https://github.com/paulroth3d/nodejsSfdcCmdTemplate#readme"
+  "homepage": "https://github.com/paulroth3d/nodejsSfdcCmdTemplate#readme",
+  "devDependencies": {
+    "commander": "^2.9.0",
+    "fs": "0.0.1-security",
+    "opener": "^1.4.3",
+    "prompt": "^1.0.0",
+    "q": "^1.4.1",
+    "underscore": "^1.8.3"
+  }
 }

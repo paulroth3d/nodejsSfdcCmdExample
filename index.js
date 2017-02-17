@@ -28,6 +28,7 @@ program
         .option( '-h, --host [domain]', 'use this to connect to a custom domain' )
         .option( '-p, --put [somevalue]', 'test put and getting values' )
         .option( '-g, --get', 'gets the value from the config store' )
+        .option( '-o, --logout', 'logs the current user out' )
         .parse( process.argv ); //-- always end with a parse
 
 program.on( '--help', function(){
@@ -83,6 +84,11 @@ function safeToString(evt){
       result[prop]=str;
     }
     return( JSON.stringify( result ));
+}
+
+if( program.logout ){
+	STORE.delete( 'accessToken' );
+	STORE.delete( 'instanceUrl' );
 }
 
 if( program.login ){

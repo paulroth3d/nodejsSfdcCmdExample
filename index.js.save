@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+'use strict';
+
+const program = require('commander');
+
+program
+	.version('0.0.1')
+	.option( '-o, --option','option description')
+	.option( '-m, --more', 'additional options')
+	.option( '-i, --input [optional]', 'optional input' )
+	.option( '-I, --another-input <required>', 'required user input' )
+	.parse( process.argv ); //-- always end with a parse
+
+

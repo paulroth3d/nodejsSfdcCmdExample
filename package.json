@@ -26,6 +26,7 @@
     "underscore": "^1.8.3"
   },
   "dependencies": {
-    "config": "^1.25.1"
+    "config": "^1.25.1",
+    "configstore": "^3.0.0"
   }
 }

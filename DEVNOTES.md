@@ -9,3 +9,8 @@ alternatives
 * [https://www.npmjs.com/package/salesforce-oauth2](https://www.npmjs.com/package/salesforce-oauth2)
 
 ### 
+possibly better alternative:
+* https://www.npmjs.com/package/salesforce-oauth2
+* https://github.com/kevinohara80/nforce
+* https://github.com/kevinohara80/nforce-metadata etc.
+

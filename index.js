@@ -19,7 +19,11 @@ var sf = require( 'node-salesforce' );
 var Configstore = require( 'configstore' );
 var STORE = new Configstore( pkg.name, { somevalue: 'original value' });
 
+//-- Local node modules
+var CmdLauncher = require( './localModules/CmdLauncher.js' );
+
 //-- commander examples: https://github.com/tj/commander.js/tree/master/examples
+
 
 program
         .version('0.0.1')
@@ -86,12 +90,7 @@ function safeToString(evt){
     return( JSON.stringify( result ));
 }
 
-if( program.logout ){
-	STORE.delete( 'accessToken' );
-	STORE.delete( 'instanceUrl' );
-}
-
-if( program.login ){
+function doLogin(){
 	prompt.start();
 	prompt.get( promptSchema, function( err, result ){
 		if( err ){
@@ -143,7 +142,9 @@ if( program.login ){
 			}
 		});
 	});
-} else {
+}
+
+function reloadConnection(){
 	var connObj = {
 		instanceUrl: STORE.get( 'instanceUrl' ),
 		accessToken: STORE.get( 'accessToken' )
@@ -170,5 +171,20 @@ if( program.login ){
 			}
 		}
 	});
+}
+
+function doLogout(){
+	STORE.delete( 'accessToken' );
+	STORE.delete( 'instanceUrl' );
+}
+
+if( program.logout ){
+	doLogout();
+}
+
+if( program.login ){
+	doLogin();
+} else {
+	//reloadConnection();
 }
 

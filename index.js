@@ -21,6 +21,7 @@ var STORE = new Configstore( pkg.name, { somevalue: 'original value' });
 
 //-- Local node modules
 var CmdLauncher = require( './localModules/CmdLauncher.js' );
+require('/localModules/CmdLauncherInitializer.js' )( CmdLauncher );
 
 //-- commander examples: https://github.com/tj/commander.js/tree/master/examples
 

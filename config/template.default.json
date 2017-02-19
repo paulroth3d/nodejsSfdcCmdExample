@@ -1,0 +1,11 @@
+{
+	// Customer module configs 
+	"environment": {
+		"name": "development"
+	},
+	"hosts": {
+		"sandbox": "https://test.salesforce.com",
+		"production": "https://login.salesforce.com"
+		"port": 55672
+	}
+}

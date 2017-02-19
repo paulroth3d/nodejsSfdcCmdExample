@@ -1,3 +1,7 @@
+#specific to this project
+index_oldConnect.js
+config/default.json
+
 # Logs
 logs
 *.log

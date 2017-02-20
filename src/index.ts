@@ -20,6 +20,9 @@ var config = require( 'config' );
 //-- local commands
 let hostURL:String;
 
+//-- local modules
+let safeToString = require( './localModules/safeToString' );
+
 program
         .version('0.0.1')
         .option( '-l, --login', 'start the login process' )
@@ -51,5 +54,7 @@ try {
 } catch( err ){
 	console.log( 'error occurred:' ); console.error( err ); console.error( JSON.stringify( err ));
 }
+
+console.log( safeToString( pkg ));
 
 console.log( "at the end of the project" );

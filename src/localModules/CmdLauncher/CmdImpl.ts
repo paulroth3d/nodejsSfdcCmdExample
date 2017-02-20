@@ -1,4 +1,4 @@
-let q = require('q');
+import * as Q from 'q';
 import { CmdLauncher } from "./index";
 import { Cmd } from "./Cmd";
 
@@ -17,7 +17,7 @@ export class CmdImpl implements Cmd {
 	 * @param cmdName:String - the name the command was created through
 	 * @param options (any/object) - the arguments to use when running the command
 	 **/
-	execute( launcher:CmdLauncher, cmdName:string, options:any ):any {
+	execute( launcher:CmdLauncher, cmdName:string, options:any ):Q.Promise {
 		console.log( 'launcher executed[' + cmdName + ']' );
 		try {
 			console.log( 'arguments sent:' ); console.log( options ); console.log( JSON.stringify( options ));

@@ -1,3 +1,4 @@
+import * as Q from 'q';
 import { CmdLauncher } from "./index";
 
 /**
@@ -12,5 +13,5 @@ export interface Cmd {
 	 * @param cmdName (String) - the command name (or pattern) that the generator matched on.
 	 * @param options (Object) - object with whatever parameters (as properties) that the command should use when running.
 	 **/
-	execute( launcher:CmdLauncher, cmdName:string, options:any );
+	execute( launcher:CmdLauncher, cmdName:string, options:any ):Q.Promise;
 }

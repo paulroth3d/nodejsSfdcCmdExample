@@ -1,3 +1,4 @@
+import * as Q from 'q';
 import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher"
 
 /**
@@ -18,11 +19,15 @@ export class LogoutCommandGenerator implements CmdGenerator {
 
 export class LogoutCommand implements Cmd {
 	
-	public execute( launcher:CmdLauncher, cmdName:string, options:any ):any {
+	public execute( launcher:CmdLauncher, cmdName:string, options:any ):Q.Promise {
+		let deferred:Q.Promise = Q.defer();
+		deferred.resolve( "success" );
 		console.log( "logout command was called! by command:" + cmdName );
 		if( options ){
 			console.log( "options:" + options );
 			console.log( JSON.stringify( options ));
 		}
+		
+		return( deferred.promise );
 	}
 }

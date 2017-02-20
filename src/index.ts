@@ -17,6 +17,8 @@ let program:any = require('commander');
 /** extensible configuration settings, with overrides based on build enviornments **/
 var config = require( 'config' );
 
+/** allow for promises(); **/
+
 //-- local commands
 let hostURL:String;
 
@@ -66,7 +68,16 @@ console.log( safeToString( pkg ));
 
 if( program.login ){
 	console.log( "request to login received" );
-	launcher.execute( "login", { someProgram:"this" } );
+	launcher.execute( "login", { someProgram:"this" } )
+		.then( function(){
+			console.log( "login command completed" );
+		})
+		.catch( function(){
+			console.log( "error occurred for login" );
+		})
+		.done( function(){
+			console.log( "done called for login" );
+		})
 }
 
 console.log( "at the end of the project" );

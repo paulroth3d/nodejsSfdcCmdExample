@@ -1,5 +1,5 @@
 //-- utilize promises
-let q:any = require('q');
+import * as Q from 'q';
 
 import { CmdGenerator } from "./CmdGenerator"
 import { Cmd } from "./Cmd"
@@ -70,7 +70,7 @@ export class CmdLauncher {
 	 * @param options (Object)
 	 * @return q.Promise
 	 **/
-	execute( cmdName:string, options:any ):any {
+	execute( cmdName:string, options:any ):Q.Promise {
 		let generator:CmdGenerator = this.getType( cmdName );
 		if( generator == null ){
 			console.error( CmdLauncher.ERROR_COMMAND_NOT_FOUND + cmdName );

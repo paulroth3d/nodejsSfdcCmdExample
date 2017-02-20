@@ -12,7 +12,13 @@ debugger;
 console.log( 'something else' );
 
 /** command line argument handling **/
-var program:any = require('commander');
+let program:any = require('commander');
+
+/** extensible configuration settings, with overrides based on build enviornments **/
+var config = require( 'config' );
+
+//-- local commands
+let hostURL:String;
 
 program
         .version('0.0.1')
@@ -32,3 +38,18 @@ program.on( '--help', function(){
 });
 
 console.log( 'login:' + program.login );
+
+//-- determine the host url;
+try {
+	hostURL = config.get( 'hosts.production' );
+	if( program.host ){
+		hostURL = 'https://' + program.host;
+	} else if( program.sandbox ){
+		hostURL = config.get( 'hosts.sandbox' );
+	}
+	console.log( 'hostURL:' + hostURL );
+} catch( err ){
+	console.log( 'error occurred:' ); console.error( err ); console.error( JSON.stringify( err ));
+}
+
+console.log( "at the end of the project" );

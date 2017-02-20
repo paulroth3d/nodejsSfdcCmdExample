@@ -2,7 +2,7 @@
   "name": "cmdtemplate",
   "version": "0.0.1",
   "description": "Template project for creating a command line tool using nodejs + salesforce",
-  "bin": "index.js",
+  "bin": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/paulroth3d/nodejsSfdcCmdTemplate#readme",
   "devDependencies": {
+    "@types/node": "^7.0.5",
     "commander": "^2.9.0",
     "fs": "0.0.1-security",
     "grunt-ts": "^6.0.0-beta.11",

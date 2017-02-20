@@ -1,6 +1,12 @@
 #specific to this project
 index_oldConnect.js
 config/default.json
+dist
+dist/**
+dist/**/*
+.tscache
+.tscache/**
+.tscache/**/*
 
 # Logs
 logs

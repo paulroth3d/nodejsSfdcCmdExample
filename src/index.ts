@@ -22,6 +22,7 @@ let hostURL:String;
 
 //-- local modules
 let safeToString = require( './localModules/safeToString' );
+let CmdLauncher = require( './localModules/CmdLauncher' );
 
 program
         .version('0.0.1')

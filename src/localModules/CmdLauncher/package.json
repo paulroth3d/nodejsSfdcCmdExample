@@ -1,0 +1,17 @@
+{
+  "name": "cmdlauncher",
+  "version": "0.0.1",
+  "description": "Simple command pattern for nodejs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Paul Roth",
+  "license": "MIT",
+  "devDependencies": {
+    "q": "^1.4.1"
+  },
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
+}

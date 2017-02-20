@@ -22,17 +22,16 @@ export class CmdLauncher {
 	 * Constructor
 	 **/
 	constructor(){
-		this.initialize();
 		this.generators = [];
 		return( this );
 	}
-
+	
 	/**
-	 * the initialization of the command structure - to be overridden if needed.
-	 * (should always be the first thing called) and overridden
+	 * Adds a generator to the list
+	 * @param generator (CmdGenerator)
 	 **/
-	initialize():void {
-		console.log( "initialize called" );
+	addType( generator:CmdGenerator ):void {
+		this.generators.unshift( generator );
 	}
 	
 	/**

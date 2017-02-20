@@ -22,7 +22,13 @@ let hostURL:String;
 
 //-- local modules
 let safeToString = require( './localModules/safeToString' );
-let CmdLauncher = require( './localModules/CmdLauncher' );
+import { CmdLauncher } from './localModules/CmdLauncher';
+
+debugger;
+console.log( 'cmdLauncher:' + (typeof CmdLauncher));
+
+let launcher = new CmdLauncher();
+require( './CommandInitializer' )( launcher )
 
 program
         .version('0.0.1')
@@ -57,5 +63,10 @@ try {
 }
 
 console.log( safeToString( pkg ));
+
+if( program.login ){
+	console.log( "request to login received" );
+	launcher.execute( "login", { someProgram:"this" } );
+}
 
 console.log( "at the end of the project" );

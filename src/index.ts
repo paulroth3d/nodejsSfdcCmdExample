@@ -12,23 +12,29 @@ let program:any = require('commander');
 /** extensible configuration settings, with overrides based on build enviornments **/
 var config = require( 'config' );
 
-/** the application instance **/
-let APP = require( './application' );
-
 /** allow for promises(); **/
 
-//-- local commands
-let hostURL:String;
-
+//-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
 //-- local modules
 let safeToString = require( './localModules/safeToString' );
+
+//-- import the command launcher
 import { CmdLauncher } from './localModules/CmdLauncher';
 
-debugger;
-console.log( 'cmdLauncher:' + (typeof CmdLauncher));
-
+//-- initialize the commands
 let launcher = new CmdLauncher();
 require( './CommandInitializer' )( launcher )
+
+//-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
+//-- local variables
+let initialHost:string;
+
+/** the application instance **/
+import { Application } from './application';
+let APP = Application.getInstance();
+
+//-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
+//-- initialize the app.
 
 program
         .version('0.0.1')
@@ -47,29 +53,16 @@ program.on( '--help', function(){
 	program.help();
 });
 
-console.log( 'login:' + program.login );
-
-try {
-	hostURL = config.get( 'hosts.production' );
-	if( program.host ){
-		hostURL = 'https://' + program.host;
-	} else if( program.sandbox ){
-		hostURL = config.get( 'hosts.sandbox' );
-	}
-	console.log( 'hostURL:' + hostURL );
-} catch( err ){
-	console.log( 'error occurred:' ); console.error( err ); console.error( JSON.stringify( err ));
-}
-
-let initialHost = APP.getConnectionHost( program.host, program.sandbox );
+debugger;
+initialHost = APP.getConnectionHost( program.host, program.sandbox );
 APP.init( pkg, initialHost );
 console.log( 'isConnected:' + APP.getConnection().hasConnection() );
 
-//-- initializes th app.
+//-- initializes the app.
 APP.init( pkg, initialHost );
 
-
-console.log( safeToString( pkg ));
+//-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
+//-- send out the commands
 
 if( program.login ){
 	console.log( "request to login received" );

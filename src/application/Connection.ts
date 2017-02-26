@@ -58,7 +58,7 @@ export class Connection {
 	 * return ConnectionInfo
 	 **/
 	public checkConnection():Q.Promise {
-		let deferred:Q.Promise = Q.deferred();
+		let deferred:Q.Promise = Q.defer();
 		
 		deferred.resolve( 'connection has been resolved' );
 		
@@ -70,7 +70,7 @@ export class Connection {
 	 **/
 	public login( username:string, pass:string, token:string ):Q.Promise {
 		//-- @TODO: 
-		let deferred:Q.Promise = Q.deferred();
+		let deferred:Q.Promise = Q.defer();
 		
 		let conn:ConnectionInfo = new ConnectionInfo( "myServerUrl", "mySessionId", this.initialHost );
 		conn.serialize( this.connectionStore );

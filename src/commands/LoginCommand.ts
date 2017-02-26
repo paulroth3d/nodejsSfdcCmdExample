@@ -1,8 +1,8 @@
 import * as Q from 'q';
 import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher"
 
-let APP = require( '../application' );
-import { Connection } from '../application';
+import { Application, Connection } from '../application';
+let APP = Application.getInstance();
 
 import { PromptCredentialsCommand } from './PromptCredentialsCommand';
 
@@ -50,6 +50,8 @@ export class LoginCommand implements Cmd {
 				})
 				['catch']( function( err ){
 					console.log( 'failure when asking for credentials' );
+					console.log( '[' + err + ']' );
+					console.log( JSON.stringify( err ));
 					deferred.reject( err );
 				})
 		} else {

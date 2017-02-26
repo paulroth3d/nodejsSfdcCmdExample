@@ -7,6 +7,8 @@ dist/**/*
 .tscache
 .tscache/**
 .tscache/**/*
+Grunt.output
+tscommand-*.tmp.txt
 
 # Logs
 logs
@@ -66,4 +68,3 @@ typings/
 
 # dotenv environment variables file
 .env
-

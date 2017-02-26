@@ -8,8 +8,27 @@ module.exports = function(grunt) {
 					allowJs: true
 				}
 			}
-        }
+        },
+		watch: {
+			default: {
+				files: ['src/**/*.ts'],
+				tasks: ['ts'],
+				options: {
+					spawn: false
+				}
+			}
+		},
+		clean: {
+			default: {
+				src: ['dist']
+			},
+			grunt: {
+				src: ['Grunt.output']
+			}
+		}
     });
     grunt.loadNpmTasks("grunt-ts");
+	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.registerTask("default", ["ts"]);
 };

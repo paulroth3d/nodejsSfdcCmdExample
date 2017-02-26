@@ -1,6 +1,11 @@
 import * as Q from 'q';
 import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher"
 
+let APP = require( '../application' );
+import { Connection } from '../application';
+
+import { PromptCredentialsCommand } from './PromptCredentialsCommand';
+
 /**
  * The commands to perform the login.
  **/
@@ -21,13 +26,38 @@ export class LoginCommand implements Cmd {
 	
 	public execute( launcher:CmdLauncher, cmdName:string, options:any ):Q.Promise {
 		let deferred:Q.Promise = Q.defer();
-		deferred.resolve( "success" );
-		console.log( "login command was called! by command:" + cmdName );
-		if( options ){
-			console.log( "options:" + options );
-			console.log( JSON.stringify( options ));
+		
+		debugger;
+		console.log( 'login command execute received' );
+		
+		let c:Connection = APP.getConnection();
+		let hasConnection:boolean = c.hasConnection();
+		
+		if( !hasConnection ){
+			launcher.execute( 'promptCredentials', {} )
+				.then( function( creds:any ):void {
+					console.log( 'connection credentials received' );
+					c.login( creds.username, creds.pass, creds.token )
+						.then( function( c:Connection ):void {
+							console.log( 'successful login' );
+							deferred.resolve( c );
+						})
+						['catch']( function( err ){
+							console.log( 'failed to connect' );
+							console.error( '@TODO' );
+							deferred.reject( err );
+						});
+				})
+				['catch']( function( err ){
+					console.log( 'failure when asking for credentials' );
+					deferred.reject( err );
+				})
+		} else {
+			console.log( 'connection already has a connection' );
+			deferred.resolve( c );
 		}
 		
 		return( deferred.promise );
 	}
 }
+

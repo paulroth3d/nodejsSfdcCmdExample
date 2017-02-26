@@ -1,6 +1,6 @@
 import { CmdLauncher, CmdGenerator, Cmd } from "./localModules/CmdLauncher";
 
-import { LoginCommandGenerator, LogoutCommandGenerator } from "./commands";
+import { LoginCommandGenerator, LogoutCommandGenerator, PromptCredentialsCommandGenerator } from "./commands";
 
 
 /**
@@ -10,4 +10,5 @@ import { LoginCommandGenerator, LogoutCommandGenerator } from "./commands";
 module.exports = exports = function( launcher:CmdLauncher ):void {
 	launcher.addType( new LoginCommandGenerator() );
 	launcher.addType( new LogoutCommandGenerator() );
+	launcher.addType( new PromptCredentialsCommandGenerator() );
 }

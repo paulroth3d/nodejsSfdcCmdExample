@@ -2,3 +2,4 @@
 
 export * from "./LoginCommand"
 export * from "./LogoutCommand"
+export * from "./PromptCredentialsCommand"

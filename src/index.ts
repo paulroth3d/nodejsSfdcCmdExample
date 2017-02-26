@@ -6,16 +6,14 @@
 
 let pkg:any = require( '../package.json' );
 
-//-- @TODO: remove
-console.log( 'package.name:' + pkg.name );
-debugger;
-console.log( 'something else' );
-
 /** command line argument handling **/
 let program:any = require('commander');
 
 /** extensible configuration settings, with overrides based on build enviornments **/
 var config = require( 'config' );
+
+/** the application instance **/
+let APP = require( './application' );
 
 /** allow for promises(); **/
 
@@ -51,7 +49,6 @@ program.on( '--help', function(){
 
 console.log( 'login:' + program.login );
 
-//-- determine the host url;
 try {
 	hostURL = config.get( 'hosts.production' );
 	if( program.host ){
@@ -63,6 +60,14 @@ try {
 } catch( err ){
 	console.log( 'error occurred:' ); console.error( err ); console.error( JSON.stringify( err ));
 }
+
+let initialHost = APP.getConnectionHost( program.host, program.sandbox );
+APP.init( pkg, initialHost );
+console.log( 'isConnected:' + APP.getConnection().hasConnection() );
+
+//-- initializes th app.
+APP.init( pkg, initialHost );
+
 
 console.log( safeToString( pkg ));
 

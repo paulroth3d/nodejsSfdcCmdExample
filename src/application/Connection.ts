@@ -83,13 +83,19 @@ export class Connection {
 	/**
 	 * logs out
 	 **/
-	public logout():void {
+	public logout():Q.Promise {
+		let deferred:Q.Promise = Q.defer();
+		
 		this.connectionStore.delete( 'serverUrl' );
 		this.connectionStore.delete( 'sessionId' );
 		this.connectionStore.delete( 'lastConnectionHost' );
 		this.nforce = null;
+		
+		deferred.resolve( 'success' );
+		console.log( "Successful logout" );
+		
+		return( deferred.promise );
 	}
-	
 }
 
 export class ConnectionInfo {

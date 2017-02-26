@@ -64,6 +64,19 @@ APP.init( pkg, initialHost );
 //-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
 //-- send out the commands
 
+if( program.logout ){
+	console.log( 'request to logout recieved' );
+	launcher.execute( 'logout', {} )
+		.then( function(){
+			console.log( 'logout completed' );
+		})
+		['catch']( function( err ){
+			console.log( 'error occurred during logout' );
+			console.log( err );
+			console.log( JSON.stringify( err ));
+		});
+}
+
 if( program.login ){
 	console.log( "request to login received" );
 	launcher.execute( "login", { someProgram:"this" } )

@@ -43,8 +43,6 @@ export class PromptCredentialsCommand implements Cmd {
 	public execute( launcher:CmdLauncher, cmdName:string, options:any ):Q.Promise {
 		let deferred:Q.Promise = Q.defer();
 		
-		debugger;
-		
 		prompt.start();
 		prompt.get( this.promptSchema, function( err, result ){
 			if( err ){

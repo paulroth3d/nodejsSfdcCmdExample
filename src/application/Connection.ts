@@ -35,7 +35,10 @@ export class Connection {
 	}
 	
 	/**
-	 * Whether there is any connection currently
+	 * Whether there is any connection currently.
+	 * Whether there is a cached connection (true) or not (false).
+	 * If there is a connection, it may not still be active - as determined by checkConnection.
+	 * @see checkConnection
 	 **/
 	public hasConnection():boolean {
 		//try {
@@ -52,9 +55,10 @@ export class Connection {
 		
 		//return( false );
 	}
-	
+		
 	/**
-	 * Gets the connection access token and info
+	 * Determines if there is a connection (see hasConnection) and it is valid.
+	 * If there is no cached connection (as determined by hasConnection), it will return false.
 	 * return ConnectionInfo
 	 **/
 	public checkConnection():Q.Promise {

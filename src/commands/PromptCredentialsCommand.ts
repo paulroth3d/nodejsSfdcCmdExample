@@ -1,5 +1,7 @@
 import * as Q from 'q';
-import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher"
+import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher";
+
+import { simpleFailureHandler } from '../util';
 
 let APP = require( '../application' );
 import { Connection } from '../application';
@@ -28,14 +30,16 @@ export class PromptCredentialsCommand implements Cmd {
 	
 	constructor(){
 		this.promptSchema = {
-			username: {
-				required: true
-			},
-			password: {
-				hidden: true
-			},
-			token: {
-				required: false
+			properties: {
+				username: {
+					required: true
+				},
+				password: {
+					hidden: true
+				},
+				token: {
+					required: false
+				}
 			}
 		};
 	}
@@ -46,14 +50,11 @@ export class PromptCredentialsCommand implements Cmd {
 		prompt.start();
 		prompt.get( this.promptSchema, function( err, result ){
 			if( err ){
-				console.log( "there was an error asking for credentials" );
-				console.log( '[' + err + ']' );
-				console.log( JSON.stringify( err ));
+				//simpleFailureHandler( 'error occurred while asking for credentials', arguments );
 				deferred.reject( err );
 			} else {
 				console.log( "successfully asked for credentials" );
 				console.log( 'credentials:' + JSON.stringify( result ) );
-				result = { username:'proth@salesforce.com', pass:'password', token:'' };
 				deferred.resolve( result );
 			}
 		});

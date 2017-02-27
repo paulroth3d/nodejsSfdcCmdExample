@@ -1,6 +1,8 @@
 import * as Q from 'q';
 import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher"
 
+import { simpleFailureHandler } from '../util';
+
 import { Application, Connection } from '../application';
 let APP = Application.getInstance();
 
@@ -40,15 +42,12 @@ export class LoginCommand implements Cmd {
 							deferred.resolve( c );
 						})
 						['catch']( function( err ){
-							console.log( 'failed to connect' );
-							console.error( '@TODO' );
+							//simpleFailureHandler( 'failed on login', arguments );
 							deferred.reject( err );
 						});
 				})
 				['catch']( function( err ){
-					console.log( 'failure when asking for credentials' );
-					console.log( '[' + err + ']' );
-					console.log( JSON.stringify( err ));
+					//simpleFailureHandler( 'failure when asking for credentials', arguments );
 					deferred.reject( err );
 				})
 		} else {

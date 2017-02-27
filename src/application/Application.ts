@@ -1,6 +1,8 @@
 //-- connection
 import { Connection } from "./Connection";
 
+import * as Q from 'q';
+
 /**
  * This is the magical container for the app.
  **/
@@ -9,6 +11,7 @@ export class Application {
 	static instance:Application;
 	public static getInstance(){
 		if( !Application.instance ){
+			debugger;
 			Application.instance = new Application();
 		}
 		return( Application.instance );
@@ -34,7 +37,7 @@ export class Application {
 	 * @param pkg (any) - the node package.
 	 **/
 	public init( pkg:any, initialHost:string ):void {
-		
+		debugger;
 		this.initialHost = initialHost;
 		
 		this.pkg = pkg;
@@ -52,6 +55,34 @@ export class Application {
 	 **/
 	public getConnection():Connection {
 		return( this.connection );
+	}
+	
+	/**
+	 * Whether we are currently connected (true) or not (false)
+	 * @return boolean
+	 **/
+	public isConnected():boolean {
+		if( this.connection ){
+			return( this.connection.isConnected() );
+		}
+		return( false );
+	}
+	
+	/**
+	 * Whether the connection is valid.
+	 * (Delegate to the connection)
+	 * @return Q.Promise
+	 **/
+	public checkConnection():Q.Promise {
+		let deferred:Q.Promise = Q.defer();
+		
+		if( !this.connection ){
+			deferred.reject('no connection');
+		} else {
+			return( this.connection.checkConnection() );
+		}
+		
+		return( deferred.promise );
 	}
 	
 	/**

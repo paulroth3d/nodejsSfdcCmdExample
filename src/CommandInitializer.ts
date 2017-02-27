@@ -8,6 +8,8 @@ import { LoginCommandGenerator, LogoutCommandGenerator, PromptCredentialsCommand
  * @param launcher (CmdLauncher)
  **/
 module.exports = exports = function( launcher:CmdLauncher ):void {
+	//-- launcher isn't needed to be sent - as it is a singleton
+	//-- but it makes it clearer what we are doing here.'
 	launcher.addType( new LoginCommandGenerator() );
 	launcher.addType( new LogoutCommandGenerator() );
 	launcher.addType( new PromptCredentialsCommandGenerator() );

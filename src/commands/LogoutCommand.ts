@@ -1,6 +1,7 @@
 import * as Q from 'q';
 import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher"
 
+import { simpleFailureHandler } from '../util';
 import { Application, Connection } from '../application';
 let APP = Application.getInstance();
 
@@ -32,9 +33,7 @@ export class LogoutCommand implements Cmd {
 				deferred.resolve( results );
 			})
 			['catch']( function( err ){
-				console.log( 'error occurred during logout' );
-				console.log( err );
-				console.log( JSON.stringify( err ));
+				simpleFailureHandler( 'error occurred during logout', arguments );
 				deferred.reject( err );
 			});
 		

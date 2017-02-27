@@ -15,15 +15,15 @@ var config = require( 'config' );
 /** allow for promises(); **/
 
 //-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
-//-- local modules
-let safeToString = require( './localModules/safeToString' );
 
 //-- import the command launcher
 import { CmdLauncher } from './localModules/CmdLauncher';
 
+import { safeToString, simpleFailureHandler } from './util';
+
 //-- initialize the commands
-let launcher = new CmdLauncher();
-require( './CommandInitializer' )( launcher )
+let launcher:CmdLauncher = CmdLauncher.getInstance();
+require( './CommandInitializer' )( launcher );
 
 //-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
 //-- local variables
@@ -31,7 +31,10 @@ let initialHost:string;
 
 /** the application instance **/
 import { Application } from './application';
-let APP = Application.getInstance();
+//-- singleton instance of the app
+let APP:Application = Application.getInstance();
+//-- whether the app is connected
+let isConnected:boolean;
 
 //-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
 //-- initialize the app.
@@ -53,9 +56,9 @@ program.on( '--help', function(){
 	program.help();
 });
 
-debugger;
 initialHost = APP.getConnectionHost( program.host, program.sandbox );
 APP.init( pkg, initialHost );
+isConnected = APP.getConnection().hasConnection();
 console.log( 'isConnected:' + APP.getConnection().hasConnection() );
 
 //-- initializes the app.
@@ -88,7 +91,19 @@ if( program.login ){
 		})
 		.done( function(){
 			console.log( "done called for login" );
-		})
+		});
 }
 
-console.log( "at the end of the project" );
+if( !isConnected ){
+	console.log( "Not connected. Please try logging in" );
+} else {
+	APP.checkConnection()
+		.then( function(){
+			console.log( "Connected. Waiting for further instruction" );
+		})
+		['catch']( function(){
+			simpleFailureHandler( 'Not connected', arguments );
+		});
+}
+
+//console.log( "at the end of the project" );

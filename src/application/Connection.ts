@@ -1,6 +1,8 @@
 /** store for holding connections **/
 var ConfigStore = require( 'configstore' );
 
+var jsforce:any = require('jsforce');
+
 import * as Q from 'q';
 
 /**
@@ -9,7 +11,7 @@ import * as Q from 'q';
 export class Connection {
 	
 	/** The connection **/
-	private nforce:any;
+	private jsForceConn:any;
 	
 	/** the store for the connection **/
 	private connectionStore:any;
@@ -21,7 +23,7 @@ export class Connection {
 		if( !initialHost ){
 			initialHost = 'production';
 		}
-		this.nforce = null;
+		this.jsForceConn = null;
 		this.connectionStore = null;
 		this.initialHost = initialHost;
 	}
@@ -42,11 +44,11 @@ export class Connection {
 	 **/
 	public hasConnection():boolean {
 		//try {
-			if( this.nforce !== null ){
-				console.log( 'nforce was found' );
+			if( this.jsForceConn !== null ){
+				console.log( 'jsForceConn was found' );
 				return( true );
 			} else {
-				console.log( 'nforce not found' );
+				console.log( 'jsForceConn not found' );
 				let connectionInfo:ConnectionInfo = ConnectionInfo.deserialize( this.connectionStore );
 				console.log( 'connectionInfo:' ); console.log( JSON.stringify( connectionInfo ) );
 				return( connectionInfo.isComplete() );
@@ -64,6 +66,8 @@ export class Connection {
 	public checkConnection():Q.Promise {
 		let deferred:Q.Promise = Q.defer();
 		
+		//-- @TODO: verify the connection - possibly using the api for a test.
+		//-- @TODO: perhaps we could also cache the latest check - we only need to check once.
 		deferred.resolve( 'connection has been resolved' );
 		
 		return( deferred.promise );
@@ -76,11 +80,32 @@ export class Connection {
 		//-- @TODO: 
 		let deferred:Q.Promise = Q.defer();
 		
-		let conn:ConnectionInfo = new ConnectionInfo( "myServerUrl", "mySessionId", this.initialHost );
-		conn.serialize( this.connectionStore );
-		this.nforce = conn;
+		debugger;
 		
-		deferred.resolve( this );
+		let loginConn:any = new jsforce.Connection({
+			loginUrl: this.initialHost	
+		});
+		
+		let scope:Connection = this;
+		
+		loginConn.login( username, pass + token, function( err, userInfo ){
+			debugger;
+			console.log( 'jsForce login finished' );
+			if( err ){
+				console.error( 'Error occurred during jsForce login' );
+				console.log( err );
+				console.log( JSON.stringify( err ));
+				deferred.reject( err );
+				return;
+			}
+			
+			let newConn:ConnectionInfo = new ConnectionInfo( loginConn.instanceUrl, loginConn.accessToken, scope.initialHost );
+			newConn.serialize( scope.connectionStore );
+			scope.jsForceConn = newConn;
+			
+			deferred.resolve( newConn );
+		});
+		
 		return( deferred.promise );
 	}
 	
@@ -93,7 +118,7 @@ export class Connection {
 		this.connectionStore.delete( 'serverUrl' );
 		this.connectionStore.delete( 'sessionId' );
 		this.connectionStore.delete( 'lastConnectionHost' );
-		this.nforce = null;
+		this.jsForceConn = null;
 		
 		deferred.resolve( 'success' );
 		console.log( "Successful logout" );
@@ -138,9 +163,9 @@ export class ConnectionInfo {
 }
 
 /*
-var nforce = require('nforce');
+var jsForceConn = require('jsForceConn');
 
-var org = nforce.createConnection({
+var org = jsForceConn.createConnection({
   clientId: 'SOME_OAUTH_CLIENT_ID',
   clientSecret: 'SOME_OAUTH_CLIENT_SECRET',
   redirectUri: 'http://localhost:3000/oauth/_callback',

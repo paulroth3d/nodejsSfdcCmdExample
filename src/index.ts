@@ -79,7 +79,7 @@ if( program.logout ){
 			console.log( JSON.stringify( err ));
 		});
 }
-
+debugger;
 if( program.login ){
 	console.log( "request to login received" );
 	launcher.execute( "login", { someProgram:"this" } )

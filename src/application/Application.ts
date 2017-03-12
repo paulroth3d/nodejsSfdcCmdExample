@@ -1,6 +1,8 @@
 //-- connection
 import { Connection } from "./Connection";
 
+let config:any = require('config');
+
 import * as Q from 'q';
 
 /**
@@ -11,7 +13,6 @@ export class Application {
 	static instance:Application;
 	public static getInstance(){
 		if( !Application.instance ){
-			debugger;
 			Application.instance = new Application();
 		}
 		return( Application.instance );
@@ -37,7 +38,7 @@ export class Application {
 	 * @param pkg (any) - the node package.
 	 **/
 	public init( pkg:any, initialHost:string ):void {
-		debugger;
+		//debugger;
 		this.initialHost = initialHost;
 		
 		this.pkg = pkg;
@@ -100,10 +101,10 @@ export class Application {
 	 **/
 	public getConnectionHost( host:string, useSandbox:boolean ):string {
 		if( host ){
-			return( host );
+			return( 'https://' + host );
 		} else if( useSandbox ){
-			return( 'sandbox' );
+			return( config.get( 'hosts.sandbox' ) );
 		}
-		return( 'production' );
+		return( config.get( 'hosts.production' ) );
 	}
 }

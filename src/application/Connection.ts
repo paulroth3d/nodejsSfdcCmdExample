@@ -82,8 +82,8 @@ export class Connection {
 		//console.log( 'connectionInfo:' ); console.log( JSON.stringify( connectionInfo ) );
 		
 		if( !connectionInfo || !connectionInfo.isComplete() ){
-			console.log( 'connection could not be deserialized. prompting' );
-			debugger;
+			//console.log( 'connection could not be deserialized. prompting' );
+			//debugger;
 			this.promptLogin()
 				.then( function(){
 					console.log( 'connection.checkConnection succeeded' );
@@ -211,17 +211,17 @@ export class Connection {
 		
 		this.checkConnection()
 			.then( function(){
-				console.log( 'connection found before getting user info' );
-				debugger;
+				//console.log( 'connection found before getting user info' );
+				//debugger;
 				scope.jsForceConn.identity( function( err, res ){
-					console.log( 'results from trying to get the user identity' );
-					debugger;
+					//console.log( 'results from trying to get the user identity' );
+					//debugger;
 					if( err ){
 						console.error( 'error occurred when finding the user info' );
 						deferred.reject( err );
 					} else {
-						console.log( 'running as:' + res.username );
-						console.log( 'successfully recieved the user info' );
+						//console.log( 'running as:' + res.username );
+						//console.log( 'successfully recieved the user info' );
 						
 						scope.userInfo = res;
 						

@@ -30,7 +30,7 @@ require( './CommandInitializer' )( launcher );
 let initialHost:string;
 
 /** the application instance **/
-import { Application } from './application';
+import { Application, Connection } from './application';
 //-- singleton instance of the app
 let APP:Application = Application.getInstance();
 //-- whether the app is connected
@@ -93,12 +93,17 @@ if( !program.login && !program.logout ){
 	
 	//-- continue our merry way
 	APP.checkConnection()
-		.then( function( userInfo ){
+		.then( function( conn:Connection ){
 			debugger;
-			console.log( "Connected as:" + userInfo.username + ". Waiting for further instruction" );
+			console.log( "Connected as:" + conn.userInfo.username + ". Waiting for further instruction" );
 		})
-		['catch']( function(){
-			simpleFailureHandler( 'Not connected', arguments );
+		['catch']( function( err ){
+			//simpleFailureHandler( 'Not connected', arguments );
+			console.error( "not currently connected. Please try running with --login" );
+			console.error( err );
+			console.error( JSON.stringify( err ));
+			debugger;
+			//-- @TODO: use the last connected domain to reprompt.
 		});
 }
 

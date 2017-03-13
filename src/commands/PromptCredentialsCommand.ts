@@ -59,7 +59,7 @@ export class PromptCredentialsCommand implements Cmd {
 				"token": config.get("defaultCreds.token")
 			});
 		} else {
-			console.log( 'do not use default creds' );
+			//console.log( 'do not use default creds' );
 			
 			prompt.start();
 			prompt.get( this.promptSchema, function( err, result ){

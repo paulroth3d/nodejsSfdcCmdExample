@@ -37,7 +37,7 @@ export class LoginCommand implements Cmd {
 		if( !hasConnection ){
 			launcher.execute( 'promptCredentials', {} )
 				.then( function( creds:any ):void {
-					console.log( 'connection credentials received' );
+					//console.log( 'connection credentials received' );
 					c.login( creds.username, creds.password, creds.token )
 						.then( function( c:Connection ):void {
 							//console.log( 'successful login' );

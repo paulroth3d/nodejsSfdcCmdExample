@@ -31,7 +31,7 @@ export class Connection {
 	/**
 	 * Current user's information
 	 **/
-	private userInfo:any;
+	public userInfo:any;
 	
 	constructor( initialHost:string ){
 		if( !initialHost ){
@@ -73,7 +73,7 @@ export class Connection {
 		//-- @TODO: verify the connection - possibly using the api for a test.
 		//-- @TODO: perhaps we could also cache the latest check - we only need to check once.
 		if( this.hasConnection() ){
-			deferred.resolve( this );
+			deferred.resolve( scope );
 			return( deferred.promise );
 		}
 		
@@ -83,11 +83,12 @@ export class Connection {
 		
 		if( !connectionInfo || !connectionInfo.isComplete() ){
 			console.log( 'connection could not be deserialized. prompting' );
+			debugger;
 			this.promptLogin()
 				.then( function(){
 					console.log( 'connection.checkConnection succeeded' );
 					//-- login succeeded, and we can assume we're good to go.
-					deferred.resolve( this )
+					deferred.resolve( scope )
 				})
 				['catch']( function(){
 					console.log( 'connection.checkConnection failed' );
@@ -97,14 +98,14 @@ export class Connection {
 					deferred.reject( arguments );
 				});
 		} else {
-			console.log( 'connection deserialized. so verify connection.' );
+			//console.log( 'connection deserialized. so verify connection.' );
 			let newConn:any = new jsforce.Connection({
 				"serverUrl": connectionInfo.serverUrl,
 				"sessionId": connectionInfo.sessionId
 			});
 			newConn.identity( function( err, res ){
-				console.log( 'results from trying to get the user identity' );
-				debugger;
+				//console.log( 'results from trying to get the user identity' );
+				//debugger;
 				if( err ){
 					console.error( 'error occurred when finding the user info' );
 					
@@ -115,9 +116,12 @@ export class Connection {
 				} else {
 					//-- connection was valid and has been tested
 					scope.jsForceConn = newConn;
+					scope.userInfo = res;
+					
+					console.log( "connection was valid and tested" );
 					
 					//console.log( res ); console.log( JSON.stringify( res ));
-					deferred.resolve( res );
+					deferred.resolve( scope );
 				}
 			});
 		}
@@ -129,7 +133,7 @@ export class Connection {
 	 * Internal method to prompt the user to login
 	 **/
 	public promptLogin():Q.Promise {
-		console.log( "request to login received" );
+		//console.log( "request to login received" );
 		return( launcher.execute( "login", null ));
 	}
 	
@@ -161,9 +165,18 @@ export class Connection {
 			
 			let newConn:ConnectionInfo = new ConnectionInfo( loginConn.instanceUrl, loginConn.accessToken, scope.initialHost );
 			newConn.serialize( scope.connectionStore );
-			scope.jsForceConn = newConn;
+			scope.jsForceConn = loginConn;
 			
-			deferred.resolve( newConn );
+			debugger;
+			scope.getUserInfo()
+				.then( function( userInfo ){
+					debugger;
+					deferred.resolve( this );
+				})
+				['catch']( function( err ){
+					console.error( 'ASSERTION: we just finished logging in. should not get error' );
+					console.error( err ); console.error( JSON.stringify( err ));
+				});
 		});
 		
 		return( deferred.promise );
@@ -199,7 +212,8 @@ export class Connection {
 		this.checkConnection()
 			.then( function(){
 				console.log( 'connection found before getting user info' );
-				this.jsForceConn.identity( function( err, res ){
+				debugger;
+				scope.jsForceConn.identity( function( err, res ){
 					console.log( 'results from trying to get the user identity' );
 					debugger;
 					if( err ){
@@ -215,8 +229,9 @@ export class Connection {
 					}
 				})
 			})
-			['catch']( function(){
+			['catch']( function( err ){
 				console.log( 'unable to get a valid connection.' );
+				console.error( err ); console.error( JSON.stringify( err ));
 				deferred.reject( arguments );
 			});
 					

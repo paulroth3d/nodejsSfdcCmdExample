@@ -32,13 +32,15 @@ export class LoginCommand implements Cmd {
 		let c:Connection = APP.getConnection();
 		let hasConnection:boolean = c.hasConnection();
 		
+		debugger;
+		
 		if( !hasConnection ){
 			launcher.execute( 'promptCredentials', {} )
 				.then( function( creds:any ):void {
 					console.log( 'connection credentials received' );
 					c.login( creds.username, creds.password, creds.token )
 						.then( function( c:Connection ):void {
-							console.log( 'successful login' );
+							//console.log( 'successful login' );
 							deferred.resolve( c );
 						})
 						['catch']( function( err ){

@@ -3,6 +3,9 @@ var ConfigStore = require( 'configstore' );
 
 var jsforce:any = require('jsforce');
 
+import { CmdLauncher } from '../localModules/CmdLauncher';
+let launcher:CmdLauncher = CmdLauncher.getInstance();
+
 import * as Q from 'q';
 
 /**
@@ -10,7 +13,7 @@ import * as Q from 'q';
  **/
 export class Connection {
 	
-	/** The connection **/
+	/** The (VERIFIED) connection **/
 	private jsForceConn:any;
 	
 	/** the store for the connection **/
@@ -18,6 +21,17 @@ export class Connection {
 	
 	/** the initial host to connect to, otherwise we'll use the last connected host we've used, or production **/
 	private initialHost:string;
+	
+	/** whether the connection has been checked within the current execution
+	  * While we can test multiple times, for now we assume that it only
+	  * needs to be checked once.
+	  **/
+	//private wasConnectionChecked:boolean = false;
+	
+	/**
+	 * Current user's information
+	 **/
+	private userInfo:any;
 	
 	constructor( initialHost:string ){
 		if( !initialHost ){
@@ -43,34 +57,80 @@ export class Connection {
 	 * @see checkConnection
 	 **/
 	public hasConnection():boolean {
-		//try {
-			if( this.jsForceConn !== null ){
-				console.log( 'jsForceConn was found' );
-				return( true );
-			} else {
-				console.log( 'jsForceConn not found' );
-				let connectionInfo:ConnectionInfo = ConnectionInfo.deserialize( this.connectionStore );
-				console.log( 'connectionInfo:' ); console.log( JSON.stringify( connectionInfo ) );
-				return( connectionInfo.isComplete() );
-			}
-		//} catch( err ){ console.error( 'error occurred while checking connection' ); console.error( err ); }
-		
-		//return( false );
+		return( this.jsForceConn !== null );
 	}
 		
 	/**
 	 * Determines if there is a connection (see hasConnection) and it is valid.
 	 * If there is no cached connection (as determined by hasConnection), it will return false.
 	 * return ConnectionInfo
+	 * @TODO: make this private, really we should only need this when using it.
 	 **/
 	public checkConnection():Q.Promise {
 		let deferred:Q.Promise = Q.defer();
+		let scope:Connection = this;
 		
 		//-- @TODO: verify the connection - possibly using the api for a test.
 		//-- @TODO: perhaps we could also cache the latest check - we only need to check once.
-		deferred.resolve( 'connection has been resolved' );
+		if( this.hasConnection() ){
+			deferred.resolve( this );
+			return( deferred.promise );
+		}
+		
+		//-- it still might be there, it could just be serialized
+		let connectionInfo:ConnectionInfo = ConnectionInfo.deserialize( this.connectionStore );
+		//console.log( 'connectionInfo:' ); console.log( JSON.stringify( connectionInfo ) );
+		
+		if( !connectionInfo || !connectionInfo.isComplete() ){
+			console.log( 'connection could not be deserialized. prompting' );
+			this.promptLogin()
+				.then( function(){
+					console.log( 'connection.checkConnection succeeded' );
+					//-- login succeeded, and we can assume we're good to go.
+					deferred.resolve( this )
+				})
+				['catch']( function(){
+					console.log( 'connection.checkConnection failed' );
+					
+					//-- @TODO: login?
+					
+					deferred.reject( arguments );
+				});
+		} else {
+			console.log( 'connection deserialized. so verify connection.' );
+			let newConn:any = new jsforce.Connection({
+				"serverUrl": connectionInfo.serverUrl,
+				"sessionId": connectionInfo.sessionId
+			});
+			newConn.identity( function( err, res ){
+				console.log( 'results from trying to get the user identity' );
+				debugger;
+				if( err ){
+					console.error( 'error occurred when finding the user info' );
+					
+					//-- could not get anything.
+					//-- @TODO: login?
+					
+					deferred.reject( err );
+				} else {
+					//-- connection was valid and has been tested
+					scope.jsForceConn = newConn;
+					
+					//console.log( res ); console.log( JSON.stringify( res ));
+					deferred.resolve( res );
+				}
+			});
+		}
 		
 		return( deferred.promise );
+	}
+	
+	/**
+	 * Internal method to prompt the user to login
+	 **/
+	public promptLogin():Q.Promise {
+		console.log( "request to login received" );
+		return( launcher.execute( "login", null ));
 	}
 	
 	/**
@@ -90,7 +150,7 @@ export class Connection {
 		
 		loginConn.login( username, pass + token, function( err, userInfo ){
 			debugger;
-			console.log( 'jsForce login finished' );
+			
 			if( err ){
 				console.error( 'Error occurred during jsForce login' );
 				console.log( err );
@@ -121,8 +181,45 @@ export class Connection {
 		this.jsForceConn = null;
 		
 		deferred.resolve( 'success' );
-		console.log( "Successful logout" );
+		//console.log( "Successful logout" );
 		
+		return( deferred.promise );
+	}
+	
+	/**
+	 * Gets information about the current user.
+	 **/
+	public getUserInfo():Q.Promise {
+		let deferred:Q.Promise = Q.defer();
+		
+		let scope:Connection = this;
+		
+		//-- @TODO: catch should never really fire, because we'll always try it again., right?
+		
+		this.checkConnection()
+			.then( function(){
+				console.log( 'connection found before getting user info' );
+				this.jsForceConn.identity( function( err, res ){
+					console.log( 'results from trying to get the user identity' );
+					debugger;
+					if( err ){
+						console.error( 'error occurred when finding the user info' );
+						deferred.reject( err );
+					} else {
+						console.log( 'running as:' + res.username );
+						console.log( 'successfully recieved the user info' );
+						
+						scope.userInfo = res;
+						
+						deferred.resolve( res );
+					}
+				})
+			})
+			['catch']( function(){
+				console.log( 'unable to get a valid connection.' );
+				deferred.reject( arguments );
+			});
+					
 		return( deferred.promise );
 	}
 }

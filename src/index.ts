@@ -56,22 +56,18 @@ program.on( '--help', function(){
 	program.help();
 });
 
-initialHost = APP.getConnectionHost( program.host, program.sandbox );
-APP.init( pkg, initialHost );
-isConnected = APP.getConnection().hasConnection();
-console.log( 'isConnected:' + APP.getConnection().hasConnection() );
-
 //-- initializes the app.
+initialHost = APP.getConnectionHost( program.host, program.sandbox );
 APP.init( pkg, initialHost );
 
 //-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
 //-- send out the commands
 
 if( program.logout ){
-	console.log( 'request to logout recieved' );
+	//console.log( 'request to logout recieved' );
 	launcher.execute( 'logout', {} )
 		.then( function(){
-			console.log( 'logout completed' );
+			console.log( "Successfully logged out." );
 		})
 		['catch']( function( err ){
 			console.log( 'error occurred during logout' );
@@ -79,27 +75,27 @@ if( program.logout ){
 			console.log( JSON.stringify( err ));
 		});
 }
-debugger;
 if( program.login ){
-	console.log( "request to login received" );
+	//console.log( "request to login received" );
 	launcher.execute( "login", { someProgram:"this" } )
 		.then( function(){
-			console.log( "login command completed" );
+			console.log( 'Successful login' );
 		})
-		.catch( function(){
+		.catch( function( err ){
+			debugger;
 			console.log( "error occurred for login" );
-		})
-		.done( function(){
-			console.log( "done called for login" );
 		});
 }
 
-if( !isConnected ){
-	console.log( "Not connected. Please try logging in" );
-} else {
+//-- always check initially to make sure that we're connected
+//-- before doing anything else.
+if( !program.login && !program.logout ){
+	
+	//-- continue our merry way
 	APP.checkConnection()
-		.then( function(){
-			console.log( "Connected. Waiting for further instruction" );
+		.then( function( userInfo ){
+			debugger;
+			console.log( "Connected as:" + userInfo.username + ". Waiting for further instruction" );
 		})
 		['catch']( function(){
 			simpleFailureHandler( 'Not connected', arguments );

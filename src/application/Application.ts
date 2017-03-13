@@ -7,6 +7,7 @@ import * as Q from 'q';
 
 /**
  * This is the magical container for the app.
+ * @TODO: make this an event emitter.
  **/
 export class Application {
 	
@@ -47,7 +48,7 @@ export class Application {
 		this.connection = new Connection( initialHost );
 		this.connection.initializeConnectionStore( projectName );
 		
-		console.log( "application has been initialized" );
+		//console.log( "application has been initialized" );
 	}
 	
 	/**

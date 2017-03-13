@@ -29,7 +29,7 @@ export class LogoutCommand implements Cmd {
 		let c:Connection = APP.getConnection();
 		c.logout()
 			.then( function(results){
-				console.log( 'logout completed' );
+				//console.log( 'logout completed' );
 				deferred.resolve( results );
 			})
 			['catch']( function( err ){

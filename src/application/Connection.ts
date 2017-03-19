@@ -94,8 +94,8 @@ export class Connection {
 					console.log( 'connection.checkConnection failed' );
 					
 					//-- @TODO: login?
-					
-					deferred.reject( arguments );
+					//debugger;
+					return( scope.reset() );
 				});
 		} else {
 			//console.log( 'connection deserialized. so verify connection.' );
@@ -112,7 +112,10 @@ export class Connection {
 					//-- could not get anything.
 					//-- @TODO: login?
 					
-					deferred.reject( err );
+					//-- reset the connection
+					//debugger;
+					return( scope.reset() );
+					
 				} else {
 					//-- connection was valid and has been tested
 					scope.jsForceConn = newConn;
@@ -144,8 +147,6 @@ export class Connection {
 		//-- @TODO: 
 		let deferred:Q.Promise = Q.defer();
 		
-		debugger;
-		
 		let loginConn:any = new jsforce.Connection({
 			loginUrl: this.initialHost	
 		});
@@ -153,24 +154,21 @@ export class Connection {
 		let scope:Connection = this;
 		
 		loginConn.login( username, pass + token, function( err, userInfo ){
-			debugger;
-			
 			if( err ){
 				console.error( 'Error occurred during jsForce login' );
 				console.log( err );
 				console.log( JSON.stringify( err ));
-				deferred.reject( err );
-				return;
+				
+				return( launcher.execute( "login", null ));
+				//deferred.reject( err );
 			}
 			
 			let newConn:ConnectionInfo = new ConnectionInfo( loginConn.instanceUrl, loginConn.accessToken, scope.initialHost );
 			newConn.serialize( scope.connectionStore );
 			scope.jsForceConn = loginConn;
 			
-			debugger;
 			scope.getUserInfo()
 				.then( function( userInfo ){
-					debugger;
 					deferred.resolve( this );
 				})
 				['catch']( function( err ){
@@ -196,6 +194,31 @@ export class Connection {
 		deferred.resolve( 'success' );
 		//console.log( "Successful logout" );
 		
+		return( deferred.promise );
+	}
+	
+	/**
+	 * Resets the connection.
+	 * <p>Conveience function rather than logging out and logging in again.</p>
+	 * return Q.Promise
+	 **/
+	public reset():Q.Promise {
+		let deferred:Q.Promise = Q.defer();
+
+		this.logout()
+			.then( function(){
+				this.checkConnection()
+					.then( function(){
+						deferred.resolve.apply( deferred, arguments );
+					})
+					['catch']( function(){
+						deferred.reject.apply( deferred, arguments );
+					});
+			})
+			['catch'](function(){
+				throw( 'it is not expected that an error could occur during logout' );
+			});
+
 		return( deferred.promise );
 	}
 	

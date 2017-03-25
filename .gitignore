@@ -9,6 +9,7 @@ dist/**/*
 .tscache/**/*
 Grunt.output
 tscommand-*.tmp.txt
+src/defaultCredentials.json
 
 # Logs
 logs

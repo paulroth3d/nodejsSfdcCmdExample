@@ -3,6 +3,8 @@ import { CmdLauncher, CmdGenerator, Cmd } from "../localModules/CmdLauncher";
 
 import { simpleFailureHandler } from '../util';
 
+let fs = require('fs');
+
 let config:any = require( 'config' );
 
 let APP = require( '../application' );
@@ -48,19 +50,28 @@ export class PromptCredentialsCommand implements Cmd {
 	
 	public execute( launcher:CmdLauncher, cmdName:string, options:any ):Q.Promise {
 		let deferred:Q.Promise = Q.defer();
+		let shouldPrompt:Boolean = true;
 		
-		debugger;
+		//-- @TODO: separate out credentials to a separate class/interface
 		
-		if( config.get('doNotPrompt' ) ){
-			console.log( 'use default creds defined in config.' );
-			deferred.resolve({
-				"username": config.get("defaultCreds.username"),
-				"password": config.get("defaultCreds.password"),
-				"token": config.get("defaultCreds.token")
-			});
-		} else {
+		//-- check for default credentials
+		try {
+			let defaultCredentials:any = require('../defaultCredentials.json');
+			if( defaultCredentials.doNotPrompt ){
+				let results:any = ({
+					"username": defaultCredentials.username,
+					"password": defaultCredentials.password,
+					"token": defaultCredentials.token
+				});
+				deferred.resolve( results );
+				shouldPrompt=false;
+			}
+		} catch( err ){
+			//-- to be expected if the default credentials are not there. move on.
+		}
+		
 			//console.log( 'do not use default creds' );
-			
+		if( shouldPrompt ){
 			prompt.start();
 			prompt.get( this.promptSchema, function( err, result ){
 				if( err ){

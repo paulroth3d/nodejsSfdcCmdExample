@@ -61,7 +61,7 @@ export class Application {
 	
 	/**
 	 * Convenience function go get the application
-	 * @return Connection
+	 * @return ConnectionManager
 	 **/
 	public getConnection():ConnectionManager {
 		return( ConnectionManager.getInstance() );

@@ -106,22 +106,10 @@ export class ConnectionManager {
 			}
 		};
 	}
-	
-	/**
-	 * Whether there is any connection currently.
-	 * Whether there is a cached connection (true) or not (false).
-	 * If there is a connection, it may not still be active - as determined by checkConnection.
-	 * @see checkConnection
-	 **/
-	public hasConnection():boolean {
-		return( this.jsForceConn !== null );
-	}
 		
 	/**
-	 * Determines if there is a connection (see hasConnection) and it is valid.
-	 * If there is no cached connection (as determined by hasConnection), it will return false.
-	 * return ConnectionInfo
-	 * @TODO: make this private, really we should only need this when using it.
+	 * Ensures there is a valid connection and returns a promise for when it is complete.
+	 * @return Q.Promise - promise for when there is a valid connection to Salesforce.
 	 **/
 	public checkConnection():Q.Promise {
 		let deferred:Q.Promise = Q.defer();
@@ -182,45 +170,6 @@ export class ConnectionManager {
 					
 					//console.log( res ); console.log( JSON.stringify( res ));
 					deferred.resolve( scope );
-				}
-			});
-		}
-		
-		return( deferred.promise );
-	}
-	
-	private promptCredentials():Q.Promise {
-		let deferred:Q.Promise = Q.defer();
-		let shouldPrompt:Boolean = true;
-		
-		//-- @TODO: separate out credentials to a separate class/interface
-		
-		//-- check for default credentials
-		try {
-			let defaultCredentials:any = require('../../defaultCredentials.json');
-			if( defaultCredentials.doNotPrompt ){
-				let results:any = ({
-					"username": defaultCredentials.username,
-					"password": defaultCredentials.password,
-					"token": defaultCredentials.token
-				});
-				deferred.resolve( results );
-				shouldPrompt=false;
-			}
-		} catch( err ){
-			//-- to be expected if the default credentials are not there. move on.
-		}
-		
-			//console.log( 'do not use default creds' );
-		if( shouldPrompt ){
-			prompt.start();
-			prompt.get( this.promptSchema, function( err, result ){
-				if( err ){
-					deferred.reject( err );
-				} else {
-					console.log( "successfully asked for credentials" );
-					console.log( 'credentials:' + JSON.stringify( result ) );
-					deferred.resolve( result );
 				}
 			});
 		}
@@ -343,7 +292,7 @@ export class ConnectionManager {
 	}
 	
 	/**
-	 * Gets information about the current user.
+	 * Refreshes information about the current user.
 	 **/
 	public getUserInfo():Q.Promise {
 		let deferred:Q.Promise = Q.defer();
@@ -378,6 +327,62 @@ export class ConnectionManager {
 				deferred.reject( arguments );
 			});
 					
+		return( deferred.promise );
+	}
+	
+	//-- private 
+	
+	/**
+	 * Whether there is any connection currently.
+	 * Whether there is a cached connection (true) or not (false).
+	 * If there is a connection, it may not still be active - as determined by checkConnection.
+	 * @see checkConnection
+	 **/
+	private hasConnection():boolean {
+		return( this.jsForceConn !== null );
+	}
+	
+		/**
+	 * Prompts the user for credentials for logging in.
+	 * (This is used under the sheets to force a login)
+	 * @returns Q.Promise - for when the user has completed a successful connection to Salesforce.
+	 **/
+	private promptCredentials():Q.Promise {
+		let deferred:Q.Promise = Q.defer();
+		let shouldPrompt:Boolean = true;
+		
+		//-- @TODO: separate out credentials to a separate class/interface
+		
+		//-- check for default credentials
+		try {
+			let defaultCredentials:any = require('../../defaultCredentials.json');
+			if( defaultCredentials.doNotPrompt ){
+				let results:any = ({
+					"username": defaultCredentials.username,
+					"password": defaultCredentials.password,
+					"token": defaultCredentials.token
+				});
+				deferred.resolve( results );
+				shouldPrompt=false;
+			}
+		} catch( err ){
+			//-- to be expected if the default credentials are not there. move on.
+		}
+		
+			//console.log( 'do not use default creds' );
+		if( shouldPrompt ){
+			prompt.start();
+			prompt.get( this.promptSchema, function( err, result ){
+				if( err ){
+					deferred.reject( err );
+				} else {
+					console.log( "successfully asked for credentials" );
+					console.log( 'credentials:' + JSON.stringify( result ) );
+					deferred.resolve( result );
+				}
+			});
+		}
+		
 		return( deferred.promise );
 	}
 }

@@ -52,19 +52,19 @@ export class Application {
 	}
 	
 	/**
-	 * Gets the current connection store
-	 * @TODO: make the connectionStore typescript safe
-	 **/
-	public getConnectionStore():any {
-		return( this.connectionStore );
-	}
-	
-	/**
 	 * Convenience function go get the application
 	 * @return ConnectionManager
 	 **/
 	public getConnection():ConnectionManager {
 		return( ConnectionManager.getInstance() );
+	}
+	
+	/**
+	 * Gets the current connection store
+	 * @return - ConnectionStore
+	 **/
+	public getConnectionStore():any {
+		return( this.connectionStore );
 	}
 	
 	/**

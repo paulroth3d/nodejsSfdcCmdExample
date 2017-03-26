@@ -10,6 +10,7 @@ dist/**/*
 Grunt.output
 tscommand-*.tmp.txt
 src/defaultCredentials.json
+**/*.old
 
 # Logs
 logs

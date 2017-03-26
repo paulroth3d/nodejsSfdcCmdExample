@@ -1,0 +1,9 @@
+{
+    "rules": {
+        "class-name": true,
+        "indent": [true, "tabs"]
+    },
+    "jsRules": {
+        "indent": [true, "tabs"]
+    }
+}

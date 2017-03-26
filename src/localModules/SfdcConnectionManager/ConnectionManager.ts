@@ -115,8 +115,6 @@ export class ConnectionManager {
 		let deferred:Q.Promise = Q.defer();
 		let scope:ConnectionManager = this;
 		
-		//-- @TODO: verify the connection - possibly using the api for a test.
-		//-- @TODO: perhaps we could also cache the latest check - we only need to check once.
 		if( this.hasConnection() ){
 			deferred.resolve( scope );
 			return( deferred.promise );
@@ -138,7 +136,6 @@ export class ConnectionManager {
 				['catch']( function(){
 					console.log( 'connection.checkConnection failed' );
 					
-					//-- @TODO: login?
 					//debugger;
 					return( scope.reset() );
 				});
@@ -153,9 +150,6 @@ export class ConnectionManager {
 				//debugger;
 				if( err ){
 					console.error( 'error occurred when finding the user info' );
-					
-					//-- could not get anything.
-					//-- @TODO: login?
 					
 					//-- reset the connection
 					//debugger;
@@ -214,7 +208,6 @@ export class ConnectionManager {
 	 * Tries to login
 	 **/
 	public login( username:string, pass:string, token:string ):Q.Promise {
-		//-- @TODO: 
 		let deferred:Q.Promise = Q.defer();
 		let scope:ConnectionManager = this;
 		
@@ -299,8 +292,6 @@ export class ConnectionManager {
 		
 		let scope:ConnectionManager = this;
 		
-		//-- @TODO: catch should never really fire, because we'll always try it again., right?
-		
 		this.checkConnection()
 			.then( function(){
 				//console.log( 'connection found before getting user info' );
@@ -351,9 +342,7 @@ export class ConnectionManager {
 		let deferred:Q.Promise = Q.defer();
 		let shouldPrompt:Boolean = true;
 		
-		//-- @TODO: separate out credentials to a separate class/interface
-		
-		//-- check for default credentials
+		//-- check for default credentials, but don't do anything unless its there and says doNotPrompt
 		try {
 			let defaultCredentials:any = require('../../defaultCredentials.json');
 			if( defaultCredentials.doNotPrompt ){

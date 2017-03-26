@@ -113,7 +113,7 @@ if( !program.login && !program.logout ){
 			console.error( err );
 			console.error( JSON.stringify( err ));
 			debugger;
-			//-- @TODO: use the last connected domain to reprompt.
+			connection.reset();
 		});
 }
 

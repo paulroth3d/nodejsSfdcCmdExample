@@ -1,8 +1,13 @@
 {
     "rules": {
         "class-name": true,
-        "indent": [true, "tabs"]
-    },
+        "indent": [true, "tabs"],
+        "no-duplicate-variable": true,
+        "no-eval": true,
+        "no-internal-module": false,
+        "no-trailing-whitespace": [ false, "ignore-comments", "ignore-jsdoc" ],
+        "no-var-keyword": true
+	},
     "jsRules": {
         "indent": [true, "tabs"]
     }

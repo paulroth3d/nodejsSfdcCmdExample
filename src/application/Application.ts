@@ -2,7 +2,7 @@
 import { ConnectionManager } from "../localModules/SfdcConnectionManager";
 
 /** store for holding connections **/
-var ConfigStore = require( 'configstore' );
+let ConfigStore = require( 'configstore' );
 
 let config:any = require('config');
 

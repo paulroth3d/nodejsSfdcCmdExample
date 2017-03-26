@@ -6,9 +6,9 @@
  **/
 export function safeToString(evt:any, printErrors:boolean ):string {
 	//-- container for property by string [type]:value
-	var result:any={};
-	var str;
-	for( var prop in evt ){
+	let result:any={};
+	let str:string;
+	for( let prop in evt ){
 		str="evt[" + prop + "]:";
 		try{
 			str+=(typeof evt[prop]);

@@ -1,9 +1,9 @@
 /** store for holding connections **/
-var ConfigStore = require( 'configstore' );
+let ConfigStore = require( 'configstore' );
 
 let config:any = require('config');
 
-var jsforce:any = require('jsforce');
+let jsforce:any = require('jsforce');
 
 import { ConnectionInfo } from './ConnectionInfo';
 import { ILoginCredentials, LoginCredentials } from './LoginCredentials';

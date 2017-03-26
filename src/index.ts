@@ -10,7 +10,7 @@ let pkg:any = require( '../package.json' );
 let program:any = require('commander');
 
 /** extensible configuration settings, with overrides based on build enviornments **/
-var config = require( 'config' );
+let config = require( 'config' );
 
 /** allow for promises(); **/
 

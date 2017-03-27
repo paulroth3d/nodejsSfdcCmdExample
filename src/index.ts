@@ -10,7 +10,7 @@ let pkg:any = require( '../package.json' );
 let program:any = require('commander');
 
 /** extensible configuration settings, with overrides based on build enviornments **/
-var config = require( 'config' );
+let config = require( 'config' );
 
 /** allow for promises(); **/
 
@@ -30,9 +30,14 @@ require( './CommandInitializer' )( launcher );
 let initialHost:string;
 
 /** the application instance **/
-import { Application, Connection } from './application';
+import { Application } from './application';
+/** the connection manager **/
+import { ConnectionManager } from './localModules/SfdcConnectionManager'
 //-- singleton instance of the app
 let APP:Application = Application.getInstance();
+//-- singleton instance of the connection to salesforce
+let connection:ConnectionManager= ConnectionManager.getInstance();
+
 //-- whether the app is connected
 let isConnected:boolean;
 
@@ -40,14 +45,14 @@ let isConnected:boolean;
 //-- initialize the app.
 
 program
-        .version('0.0.1')
-        .option( '-l, --login', 'start the login process' )
-        .option( '-s, --sandbox', 'use this parameter if you need to connect to a sandbox' )
-        .option( '-h, --host [domain]', 'use this to connect to a custom domain' )
-        .option( '-p, --put [somevalue]', 'test put and getting values' )
-        .option( '-g, --get', 'gets the value from the config store' )
-        .option( '-o, --logout', 'logs the current user out' )
-        .parse( process.argv ); //-- always end with a parse
+	.version('0.0.1')
+	.option( '-l, --login', 'start the login process' )
+	.option( '-s, --sandbox', 'use this parameter if you need to connect to a sandbox' )
+	.option( '-h, --host [domain]', 'use this to connect to a custom domain' )
+	.option( '-p, --put [somevalue]', 'test put and getting values' )
+	.option( '-g, --get', 'gets the value from the config store' )
+	.option( '-o, --logout', 'logs the current user out' )
+	.parse( process.argv ); //-- always end with a parse
 
 program.on( '--help', function(){
 	console.log( '' + pkg.description );
@@ -57,15 +62,19 @@ program.on( '--help', function(){
 });
 
 //-- initializes the app.
-initialHost = APP.getConnectionHost( program.host, program.sandbox );
-APP.init( pkg, initialHost );
+APP.init( pkg );
+
+//-- determine which host to use. (either production, sandbox or a custom)
+initialHost = ConnectionManager.getConnectionHost( program.host, program.sandbox );
+//-- initialize the settings for a connection
+connection.setup( initialHost, APP.getConnectionStore() );
 
 //-- #	#	#	#	#	#	#	#	#	#	#	#	#	#	#
 //-- send out the commands
 
 if( program.logout ){
 	//console.log( 'request to logout recieved' );
-	launcher.execute( 'logout', {} )
+	connection.logout()
 		.then( function(){
 			console.log( "Successfully logged out." );
 		})
@@ -77,7 +86,7 @@ if( program.logout ){
 }
 if( program.login ){
 	//console.log( "request to login received" );
-	launcher.execute( "login", { someProgram:"this" } )
+	connection.promptLogin()
 		.then( function(){
 			console.log( 'Successful login' );
 		})
@@ -91,9 +100,10 @@ if( program.login ){
 //-- before doing anything else.
 if( !program.login && !program.logout ){
 	
+	debugger;
 	//-- continue our merry way
-	APP.checkConnection()
-		.then( function( conn:Connection ){
+	connection.checkConnection()
+		.then( function( conn:ConnectionManager ){
 			debugger;
 			console.log( "Connected as:" + conn.userInfo.username + ". Waiting for further instruction" );
 		})
@@ -103,7 +113,7 @@ if( !program.login && !program.logout ){
 			console.error( err );
 			console.error( JSON.stringify( err ));
 			debugger;
-			//-- @TODO: use the last connected domain to reprompt.
+			connection.reset();
 		});
 }
 

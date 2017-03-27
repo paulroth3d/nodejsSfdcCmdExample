@@ -1,26 +1,67 @@
 /** store for holding connections **/
-var ConfigStore = require( 'configstore' );
+let ConfigStore = require( 'configstore' );
 
-var jsforce:any = require('jsforce');
+let config:any = require('config');
 
-import { CmdLauncher } from '../localModules/CmdLauncher';
+let jsforce:any = require('jsforce');
+
+import { ConnectionInfo } from './ConnectionInfo';
+import { ILoginCredentials, LoginCredentials } from './LoginCredentials';
+
+import { CmdLauncher } from '../CmdLauncher';
 let launcher:CmdLauncher = CmdLauncher.getInstance();
+
+let prompt:any = require( 'prompt' );
 
 import * as Q from 'q';
 
 /**
  * Represents a connection to salesforce.
+ * @TODO: genericize to separate out jsForce from the connection manager
  **/
-export class Connection {
+export class ConnectionManager {
 	
-	/** The (VERIFIED) connection **/
+	/** singleton instance **/
+	private static instance:ConnectionManager;
+	
+	public static getInstance():ConnectionManager {
+		if( ConnectionManager.instance == null ){
+			ConnectionManager.instance = new ConnectionManager();
+		}
+		return( ConnectionManager.instance );
+	}
+	
+	/**
+	 * Determine the connection host
+	 * @param hostDomain (string) - the custom host domain to use (note: https:// should not be included)
+	 * @param useSandbox (boolean) - whether to use the sandbox (true) or not (false) - only if the hostDomain is not specified
+	 **/
+	public static getConnectionHost( host:string, useSandbox:boolean ):string {
+		if( host ){
+			return( 'https://' + host );
+		} else if( useSandbox ){
+			return( config.get( 'hosts.sandbox' ) );
+		}
+		return( config.get( 'hosts.production' ) );
+	}
+	
+	/**
+	 * The (VERIFIED) jsForce connection.
+	 * Currently this is jsForce, but can be extended to any other library.
+	 * @TODO: investigate definitelyTyped definitions for jsForce - current ones are old...
+	 **/
 	private jsForceConn:any;
 	
-	/** the store for the connection **/
+	/** the store for the connection
+	 * @TODO: make typescript safe
+	 **/
 	private connectionStore:any;
 	
 	/** the initial host to connect to, otherwise we'll use the last connected host we've used, or production **/
 	private initialHost:string;
+	
+	/** prompt schema used to prompt the user for credentials. **/
+	private promptSchema:any;
 	
 	/** whether the connection has been checked within the current execution
 	  * While we can test multiple times, for now we assume that it only
@@ -33,45 +74,47 @@ export class Connection {
 	 **/
 	public userInfo:any;
 	
-	constructor( initialHost:string ){
+	constructor(){
+	}
+	
+	/**
+	 * Initializes the settings for the ConnectionManager.
+	 * (This does not start a connection, but are settings used in making/preservering it)
+	 * @param initialHost (String) - host to use when logging in
+	 * @param connectionStore (ConnectionStore) - the connection store to preserve credentials.
+	 **/
+	public setup( initialHost:string, connectionStore:any ):void {
 		if( !initialHost ){
 			initialHost = 'production';
 		}
 		this.jsForceConn = null;
 		this.connectionStore = null;
 		this.initialHost = initialHost;
-	}
-	
-	/**
-	 * Initializes the connection store
-	 * @param storename (String)
-	 **/
-	public initializeConnectionStore( storeName:string ):void {
-		this.connectionStore = new ConfigStore( storeName );
-	}
-	
-	/**
-	 * Whether there is any connection currently.
-	 * Whether there is a cached connection (true) or not (false).
-	 * If there is a connection, it may not still be active - as determined by checkConnection.
-	 * @see checkConnection
-	 **/
-	public hasConnection():boolean {
-		return( this.jsForceConn !== null );
+		this.connectionStore = connectionStore;
+		
+		this.promptSchema = {
+			properties: {
+				username: {
+					required: true
+				},
+				password: {
+					hidden: true
+				},
+				token: {
+					required: false
+				}
+			}
+		};
 	}
 		
 	/**
-	 * Determines if there is a connection (see hasConnection) and it is valid.
-	 * If there is no cached connection (as determined by hasConnection), it will return false.
-	 * return ConnectionInfo
-	 * @TODO: make this private, really we should only need this when using it.
+	 * Ensures there is a valid connection and returns a promise for when it is complete.
+	 * @return Q.Promise - promise for when there is a valid connection to Salesforce.
 	 **/
 	public checkConnection():Q.Promise {
 		let deferred:Q.Promise = Q.defer();
-		let scope:Connection = this;
+		let scope:ConnectionManager = this;
 		
-		//-- @TODO: verify the connection - possibly using the api for a test.
-		//-- @TODO: perhaps we could also cache the latest check - we only need to check once.
 		if( this.hasConnection() ){
 			deferred.resolve( scope );
 			return( deferred.promise );
@@ -93,7 +136,6 @@ export class Connection {
 				['catch']( function(){
 					console.log( 'connection.checkConnection failed' );
 					
-					//-- @TODO: login?
 					//debugger;
 					return( scope.reset() );
 				});
@@ -108,9 +150,6 @@ export class Connection {
 				//debugger;
 				if( err ){
 					console.error( 'error occurred when finding the user info' );
-					
-					//-- could not get anything.
-					//-- @TODO: login?
 					
 					//-- reset the connection
 					//debugger;
@@ -136,22 +175,45 @@ export class Connection {
 	 * Internal method to prompt the user to login
 	 **/
 	public promptLogin():Q.Promise {
-		//console.log( "request to login received" );
-		return( launcher.execute( "login", null ));
+		let scope:ConnectionManager = this;
+		let deferred:Q.Promise = Q.defer();
+		
+		if( !this.hasConnection() ){
+			this.promptCredentials()
+				.then( function( creds:any ):void {
+					//console.log( 'connection credentials received' );
+					scope.login( creds.username, creds.password, creds.token )
+						.then( function( c:ConnectionManager ):void {
+							//console.log( 'successful login' );
+							deferred.resolve( c );
+						})
+						['catch']( function( err ){
+							//simpleFailureHandler( 'failed on login', arguments );
+							deferred.reject( err );
+						});
+				})
+				['catch']( function( err ){
+					//simpleFailureHandler( 'failure when asking for credentials', arguments );
+					deferred.reject( err );
+				})
+		} else {
+			console.log( 'connection already has a connection' );
+			deferred.resolve( this );
+		}
+		
+		return( deferred.promise );
 	}
 	
 	/**
 	 * Tries to login
 	 **/
 	public login( username:string, pass:string, token:string ):Q.Promise {
-		//-- @TODO: 
 		let deferred:Q.Promise = Q.defer();
+		let scope:ConnectionManager = this;
 		
 		let loginConn:any = new jsforce.Connection({
 			loginUrl: this.initialHost	
 		});
-		
-		let scope:Connection = this;
 		
 		loginConn.login( username, pass + token, function( err, userInfo ){
 			if( err ){
@@ -159,7 +221,7 @@ export class Connection {
 				console.log( err );
 				console.log( JSON.stringify( err ));
 				
-				return( launcher.execute( "login", null ));
+				return( scope.promptLogin() );
 				//deferred.reject( err );
 			}
 			
@@ -223,14 +285,12 @@ export class Connection {
 	}
 	
 	/**
-	 * Gets information about the current user.
+	 * Refreshes information about the current user.
 	 **/
 	public getUserInfo():Q.Promise {
 		let deferred:Q.Promise = Q.defer();
 		
-		let scope:Connection = this;
-		
-		//-- @TODO: catch should never really fire, because we'll always try it again., right?
+		let scope:ConnectionManager = this;
 		
 		this.checkConnection()
 			.then( function(){
@@ -260,67 +320,58 @@ export class Connection {
 					
 		return( deferred.promise );
 	}
-}
-
-export class ConnectionInfo {
-	public serverUrl:string;
-	public sessionId:string;
-	public lastConnectionHost:string;
 	
-	constructor( serverUrl:string, sessionId:string, lastConnectionHost:string ){
-		this.serverUrl = serverUrl;
-		this.sessionId = sessionId;
-		this.lastConnectionHost = lastConnectionHost;
+	//-- private 
+	
+	/**
+	 * Whether there is any connection currently.
+	 * Whether there is a cached connection (true) or not (false).
+	 * If there is a connection, it may not still be active - as determined by checkConnection.
+	 * @see checkConnection
+	 **/
+	private hasConnection():boolean {
+		return( this.jsForceConn !== null );
 	}
 	
-	public isComplete():boolean{
-		if( this.serverUrl && this.sessionId && this.lastConnectionHost ){
-			return( true );
-		} else {
-			return( false );
+		/**
+	 * Prompts the user for credentials for logging in.
+	 * (This is used under the sheets to force a login)
+	 * @returns Q.Promise - for when the user has completed a successful connection to Salesforce.
+	 **/
+	private promptCredentials():Q.Promise {
+		let deferred:Q.Promise = Q.defer();
+		let shouldPrompt:Boolean = true;
+		
+		//-- check for default credentials, but don't do anything unless its there and says doNotPrompt
+		try {
+			let defaultCredentials:any = require('../../defaultCredentials.json');
+			if( defaultCredentials.doNotPrompt ){
+				let results:any = ({
+					"username": defaultCredentials.username,
+					"password": defaultCredentials.password,
+					"token": defaultCredentials.token
+				});
+				deferred.resolve( results );
+				shouldPrompt=false;
+			}
+		} catch( err ){
+			//-- to be expected if the default credentials are not there. move on.
 		}
-	}
-	
-	public static deserialize( connectionStore:any ):ConnectionInfo {
-		let result:ConnectionInfo = new ConnectionInfo( 
-			connectionStore.get( 'serverUrl' ),
-			connectionStore.get( 'sessionId' ),
-			connectionStore.get( 'lastConnectionHost' )
-		);
-		return( result );
-	}
-	
-	public serialize( connectionStore:any ):void {
-		connectionStore.set( 'serverUrl', this.serverUrl );
-		connectionStore.set( 'sessionId', this.sessionId );
-		connectionStore.set( 'lastConnectionHost', this.lastConnectionHost );
+		
+			//console.log( 'do not use default creds' );
+		if( shouldPrompt ){
+			prompt.start();
+			prompt.get( this.promptSchema, function( err, result ){
+				if( err ){
+					deferred.reject( err );
+				} else {
+					console.log( "successfully asked for credentials" );
+					console.log( 'credentials:' + JSON.stringify( result ) );
+					deferred.resolve( result );
+				}
+			});
+		}
+		
+		return( deferred.promise );
 	}
 }
-
-/*
-var jsForceConn = require('jsForceConn');
-
-var org = jsForceConn.createConnection({
-  clientId: 'SOME_OAUTH_CLIENT_ID',
-  clientSecret: 'SOME_OAUTH_CLIENT_SECRET',
-  redirectUri: 'http://localhost:3000/oauth/_callback',
-  apiVersion: 'v27.0',  // optional, defaults to current salesforce API version
-  environment: 'production',  // optional, salesforce 'sandbox' or 'production', production default
-  mode: 'multi' // optional, 'single' or 'multi' user mode, multi default
-});
-
-var username      = 'my_test@gmail.com',
-    password      = 'mypassword',
-    securityToken = 'some_security_token',
-    oauth;
-
-org.authenticate({ username: username, password: password, securityToken: securityToken }, function(err, resp){
-  if(!err) {
-    console.log('Access Token: ' + resp.access_token);
-    oauth = resp;
-  } else {
-    console.log('Error: ' + err.message);
-  }
-});
-*/
-

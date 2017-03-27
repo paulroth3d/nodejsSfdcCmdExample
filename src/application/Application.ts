@@ -1,5 +1,8 @@
 //-- connection
-import { Connection } from "./Connection";
+import { ConnectionManager } from "../localModules/SfdcConnectionManager";
+
+/** store for holding connections **/
+let ConfigStore = require( 'configstore' );
 
 let config:any = require('config');
 
@@ -19,72 +22,49 @@ export class Application {
 		return( Application.instance );
 	}
 	
+	/** connection store used
+	 * @TODO: make typescript safe
+	 **/
+	private connectionStore:any;
+	
 	/** node package **/
 	private pkg:any;
 	
 	/** initial host **/
 	private initialHost:string;
 	
-	/**
-	 * Connection
-	 **/
-	private connection:any;
-	
 	constructor(){
-		this.connection = null;
+		
 	}
 	
 	/**
 	 * initializes the application.
 	 * @param pkg (any) - the node package.
 	 **/
-	public init( pkg:any, initialHost:string ):void {
+	public init( pkg:any ):void {
 		//debugger;
-		this.initialHost = initialHost;
-		
 		this.pkg = pkg;
 		let projectName:string = this.pkg.name;
 		
-		this.connection = new Connection( initialHost );
-		this.connection.initializeConnectionStore( projectName );
+		this.connectionStore = new ConfigStore( projectName );
 		
 		//console.log( "application has been initialized" );
 	}
 	
 	/**
-	 * Gets the current connection
-	 * @return Connection
+	 * Convenience function go get the application
+	 * @return ConnectionManager
 	 **/
-	public getConnection():Connection {
-		return( this.connection );
+	public getConnection():ConnectionManager {
+		return( ConnectionManager.getInstance() );
 	}
 	
 	/**
-	 * Whether we are currently connected (true) or not (false)
-	 * @return boolean
+	 * Gets the current connection store
+	 * @return - ConnectionStore
 	 **/
-	public isConnected():boolean {
-		if( this.connection ){
-			return( this.connection.isConnected() );
-		}
-		return( false );
-	}
-	
-	/**
-	 * Whether the connection is valid.
-	 * (Delegate to the connection)
-	 * @return Q.Promise
-	 **/
-	public checkConnection():Q.Promise {
-		let deferred:Q.Promise = Q.defer();
-		
-		if( !this.connection ){
-			deferred.reject('no connection');
-		} else {
-			return( this.connection.checkConnection() );
-		}
-		
-		return( deferred.promise );
+	public getConnectionStore():any {
+		return( this.connectionStore );
 	}
 	
 	/**
@@ -93,19 +73,5 @@ export class Application {
 	 **/
 	public getPackageInfo():any {
 		return( this.pkg );
-	}
-	
-	/**
-	 * Determine the connection host
-	 * @param hostDomain (string) - the custom host domain to use (note: https:// should not be included)
-	 * @param useSandbox (boolean) - whether to use the sandbox (true) or not (false) - only if the hostDomain is not specified
-	 **/
-	public getConnectionHost( host:string, useSandbox:boolean ):string {
-		if( host ){
-			return( 'https://' + host );
-		} else if( useSandbox ){
-			return( config.get( 'hosts.sandbox' ) );
-		}
-		return( config.get( 'hosts.production' ) );
 	}
 }

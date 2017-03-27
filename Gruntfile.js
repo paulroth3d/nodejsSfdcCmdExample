@@ -25,10 +25,26 @@ module.exports = function(grunt) {
 			grunt: {
 				src: ['Grunt.output']
 			}
+		},
+		tslint: {
+			options: {
+				// can be a configuration object or a filepath to tslint.json 
+				configuration: "./tslint.json",
+				// If set to true, tslint errors will be reported, but not fail the task 
+				// If set to false, tslint errors will be reported, and the task will fail 
+				force: true,
+				fix: false
+			},
+			files: {
+				src: [
+					"src/**/*.ts"
+				]
+			}
 		}
     });
     grunt.loadNpmTasks("grunt-ts");
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.registerTask("default", ["ts"]);
+	grunt.loadNpmTasks('grunt-tslint');
+    grunt.registerTask("default", ["ts","tslint"]);
 };
